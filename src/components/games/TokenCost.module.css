@@ -1,0 +1,3 @@
+.cost { display:flex; align-items:center; gap:.45rem; font-weight:800; color:#f6f7fb; white-space:nowrap; }
+.cost img { width:20px; height:20px; object-fit:contain; }
+.compact { font-size:.9rem; }

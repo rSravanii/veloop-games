@@ -1,0 +1,5 @@
+.dots { display:flex; justify-content:center; align-items:center; gap:7px; margin-top:1.2rem; flex-wrap:wrap; }
+.dots button { width:7px; height:7px; border:0; border-radius:999px; padding:0; background:#62677e; transition:width .2s ease, background .2s ease, transform .2s ease; }
+.dots button:hover { transform:scale(1.2); }
+.dots button.active { width:24px; background:#9d86ff; }
+@media(prefers-reduced-motion:reduce){.dots button{transition:none}}

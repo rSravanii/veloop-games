@@ -1,0 +1,18 @@
+.button {
+  position:relative; overflow:hidden; border:0; border-radius:12px; padding:.72rem 1rem;
+  min-width:124px; background:linear-gradient(135deg,#7657ff,#9b7cff); color:white;
+  font-weight:900; letter-spacing:.01em; display:inline-flex; align-items:center; justify-content:center; gap:.5rem;
+  box-shadow:0 8px 20px rgba(118,87,255,.28); transition:transform .2s ease, box-shadow .2s ease, opacity .2s ease;
+}
+.button::after {
+  content:""; position:absolute; inset:-40% auto -40% -45%; width:34%; transform:skewX(-22deg);
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,.48),transparent);
+  animation:shimmer 2.35s linear infinite;
+}
+.button:hover:not(:disabled) { transform:translateY(-2px) scale(1.015); box-shadow:0 12px 28px rgba(118,87,255,.35); }
+.button:active:not(:disabled) { transform:scale(.97); }
+.button:disabled { opacity:.58; cursor:not-allowed; background:#50536b; box-shadow:none; }
+.arrow { transition:transform .2s ease; }
+.button:hover .arrow { transform:translateX(3px); }
+@keyframes shimmer { from { left:-45%; } to { left:130%; } }
+@media (prefers-reduced-motion: reduce) { .button::after { animation:none; } .button,.arrow { transition:none; } }

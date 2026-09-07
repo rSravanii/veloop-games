@@ -1,0 +1,2 @@
+.track { display:flex; gap:18px; overflow-x:auto; scroll-snap-type:x proximity; scrollbar-width:none; padding:8px 2px 18px; overscroll-behavior-inline:contain; touch-action:pan-x pan-y; }
+.track::-webkit-scrollbar { display:none; }

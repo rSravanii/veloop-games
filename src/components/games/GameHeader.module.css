@@ -1,0 +1,6 @@
+.header { display:flex; justify-content:space-between; gap:14px; align-items:center; padding:16px 0; }
+.back { text-decoration:none; color:#2b3150; font-weight:900; }
+.balances { display:flex; gap:8px; flex-wrap:wrap; justify-content:flex-end; }
+.balances span { display:flex; align-items:center; gap:.38rem; background:white; border:1px solid #e5e8f2; box-shadow:0 8px 22px rgba(48,55,81,.08); padding:.5rem .7rem; border-radius:999px; font-size:.82rem; font-weight:900; color:#353a50; }
+.balances img { width:20px; height:20px; object-fit:contain; }
+@media(max-width:560px){.header{align-items:flex-start}.balances{flex-direction:column}.balances span{justify-content:center}}
