@@ -109,3 +109,5 @@ For client-side routing on Vercel, this project includes `vercel.json` to rewrit
 
 ## Prototype state vs production backend
 Token/Game Coin balances in this project are dummy frontend values stored in `localStorage`. A production version should validate sessions, scores, rewards, token deductions and redemptions on a secure backend/API rather than trusting client-side values.
+
+deployed link: https://veloop-games-flame.vercel.app/games
