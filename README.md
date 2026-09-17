@@ -205,4 +205,4 @@ deployed link: https://veloop-games-flame.vercel.app/games
 =======
 Token and Game Coin balances in this project are dummy frontend values stored in `localStorage`.
 A production version should validate sessions, scores, rewards, token deductions and redemptions on a secure backend/API rather than trusting client-side values.
->>>>>>> 07c29fa (2 fully playable games and 13 interactive game banners implemented)
+>>>>>> 2 fully playable games and 13 interactive game banners implemented
