@@ -1,5 +1,6 @@
 .card {
   flex:0 0 clamp(250px,24vw,320px); scroll-snap-align:start; background:#202337;
+  width:100%;
   border:1px solid rgba(255,255,255,.09); border-radius:20px; overflow:hidden;
   box-shadow:0 18px 40px rgba(4,5,12,.32); transition:transform .25s ease, border-color .25s ease, box-shadow .25s ease;
 }
@@ -15,5 +16,5 @@
 .actionArea { min-height:114px; padding:1rem; display:flex; align-items:center; justify-content:space-between; gap:.9rem; background:linear-gradient(180deg,#22253a,#1d2032); }
 .actionArea h3 { margin:0 0 .45rem; font-size:1.02rem; color:#fff; font-weight:900; }
 @keyframes pulse { to { background-position:-240% 0; } }
-@media(max-width:575px){ .card{flex-basis:min(92vw,380px); max-width:380px}.actionArea{align-items:stretch;flex-direction:column}.actionArea button{width:100%} }
+@media(max-width:575px){ .card{flex-basis:auto; max-width:380px}.actionArea{align-items:stretch;flex-direction:column}.actionArea button{width:100%} }
 @media(prefers-reduced-motion:reduce){.card,.artworkWrap img,.skeleton{transition:none;animation:none}}

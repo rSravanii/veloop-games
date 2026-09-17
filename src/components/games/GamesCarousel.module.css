@@ -1,2 +1,4 @@
 .track { display:flex; gap:18px; overflow-x:auto; scroll-snap-type:x proximity; scrollbar-width:none; padding:8px 2px 18px; overscroll-behavior-inline:contain; touch-action:pan-x pan-y; }
+.track > div { flex:0 0 clamp(250px,24vw,320px); }
 .track::-webkit-scrollbar { display:none; }
+@media(max-width:575px){ .track > div { flex-basis:min(92vw,380px); } }
