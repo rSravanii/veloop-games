@@ -9,7 +9,7 @@ export default function GamesPage() {
     <main className={styles.page}>
       <section className={styles.shell}>
         <div className={styles.topbar}>
-          <div className={styles.brand}><span>V</span> VELOOP <strong>Rewards</strong></div>
+          <div className={styles.brand}><span>V</span> VELoop <strong>Rewards</strong></div>
           <div className={styles.wallet}>
             <span><img src="/assets/icons/token.avif" alt="" /> {state.tokens} Tokens</span>
             <span><img src="/assets/icons/game-coin.avif" alt="" /> {state.gameCoins} Game Coins</span>

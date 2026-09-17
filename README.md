@@ -1,4 +1,4 @@
-# VELOOP Rewards — Games Banner + Mini Game Ecosystem
+# VELoop Rewards — Games Banner + Mini Game Ecosystem
 
 React/Vite implementation based on the supplied `Games_banner_task_FF.pdf` task specification.
 
@@ -127,7 +127,7 @@ public/assets/icons/token.avif
 public/assets/icons/game-coin.avif
 ```
 
-with the official provided VELOOP assets, keeping the same filenames (or update `gamesData.js`). Crop important artwork carefully and preserve `object-fit: cover` / appropriate `object-position`.
+with the official provided VELoop assets, keeping the same filenames (or update `gamesData.js`). Preserve the complete artwork with responsive `height: auto` sizing and `object-fit: contain`.
 
 ## Tech stack
 - React.js

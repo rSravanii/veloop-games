@@ -31,7 +31,7 @@ function BladeMaster({ onFinish }) {
   const [knives, setKnives] = useState([])
   const [gameOver, setGameOver] = useState(false)
   const [revived, setRevived] = useState(false)
-  const [message, setMessage] = useState('Tap the target to throw!')
+  const [message, setMessage] = useState('Aim for the centre and release your blade.')
 
   const targetSize = 300
 
@@ -57,11 +57,21 @@ function BladeMaster({ onFinish }) {
 
     const rect = event.currentTarget.getBoundingClientRect()
 
-    const x = event.clientX - rect.left
-    const y = event.clientY - rect.top
+    let x = event.clientX - rect.left
+    let y = event.clientY - rect.top
 
     const centerX = rect.width / 2
     const centerY = rect.height / 2
+
+    // Landing spots are generated per throw, so repeated clicks never stack
+    // at the same point. A centre strike is guaranteed by the third throw.
+    const forceCentre = knives.length >= 2 && !knives.some((knife) => knife.isCentre)
+    const centreStrike = forceCentre || (!knives.some((knife) => knife.isCentre) && Math.random() < 0.28)
+    const impactAngle = Math.random() * Math.PI * 2
+    const impactDistance = centreStrike ? 4 + Math.random() * 15 : 52 + Math.random() * 92
+
+    x = centerX + Math.cos(impactAngle) * impactDistance
+    y = centerY + Math.sin(impactAngle) * impactDistance
 
     const dx = x - centerX
     const dy = y - centerY
@@ -82,7 +92,7 @@ function BladeMaster({ onFinish }) {
     }
 
     const tooClose = knives.some(
-      (knife) => Math.abs(knife.angle - angle) < 16
+      (knife) => Math.hypot(knife.x - (x / rect.width) * 100, knife.y - (y / rect.height) * 100) < 11
     )
 
     if (tooClose) {
@@ -105,6 +115,10 @@ function BladeMaster({ onFinish }) {
       {
         id: Date.now() + Math.random(),
         angle,
+        x: (x / rect.width) * 100,
+        y: (y / rect.height) * 100,
+        tilt: -14 + Math.random() * 28,
+        isCentre: distance < 35,
       },
     ])
   }
@@ -168,7 +182,9 @@ function BladeMaster({ onFinish }) {
               key={knife.id}
               className={styles.stuckKnife}
               style={{
-                transform: `rotate(${knife.angle + 90}deg)`,
+                left: `${knife.x}%`,
+                top: `${knife.y}%`,
+                transform: `translate(-50%, -92%) rotate(${knife.tilt}deg)`,
               }}
             >
               🔪
@@ -177,7 +193,7 @@ function BladeMaster({ onFinish }) {
         </button>
 
         <p className={styles.bladeInstruction}>
-          Click anywhere on the target to throw your knife
+          Choose a clear line on the target to throw your blade
         </p>
       </div>
 
@@ -225,6 +241,8 @@ const LEVELS = [
     { id: 4, x: 66, y: 50, rotation: 18, color: 'orange', blockers: [2] },
     { id: 5, x: 22, y: 65, rotation: 10, color: 'purple', blockers: [1, 3] },
     { id: 6, x: 50, y: 70, rotation: -15, color: 'blue', blockers: [3, 4] },
+    { id: 7, x: 72, y: 70, rotation: 8, color: 'orange', blockers: [2, 4] },
+    { id: 8, x: 42, y: 78, rotation: -6, color: 'green', blockers: [5, 6] },
   ],
 
   [
@@ -235,6 +253,8 @@ const LEVELS = [
     { id: 5, x: 27, y: 58, rotation: -18, color: 'purple', blockers: [1, 3] },
     { id: 6, x: 52, y: 63, rotation: 12, color: 'green', blockers: [3, 4] },
     { id: 7, x: 75, y: 68, rotation: -12, color: 'red', blockers: [4, 6] },
+    { id: 8, x: 42, y: 76, rotation: 7, color: 'orange', blockers: [5, 7] },
+    { id: 9, x: 68, y: 78, rotation: -9, color: 'purple', blockers: [6, 8] },
   ],
 
   [
@@ -246,12 +266,37 @@ const LEVELS = [
     { id: 6, x: 20, y: 65, rotation: 15, color: 'green', blockers: [1, 4] },
     { id: 7, x: 48, y: 68, rotation: -10, color: 'red', blockers: [4, 5] },
     { id: 8, x: 75, y: 70, rotation: 14, color: 'blue', blockers: [3, 5, 7] },
+    { id: 9, x: 40, y: 78, rotation: -7, color: 'orange', blockers: [6, 8] },
+    { id: 10, x: 67, y: 80, rotation: 10, color: 'purple', blockers: [7, 9] },
   ],
 ]
 
+function scatterPieces(template) {
+  const occupied = []
+
+  return template.map((piece) => {
+    let position = { x: piece.x, y: piece.y }
+
+    for (let attempt = 0; attempt < 40; attempt += 1) {
+      const candidate = { x: 13 + Math.random() * 74, y: 25 + Math.random() * 62 }
+      const awayFromCentre = Math.hypot(candidate.x - 50, candidate.y - 50) > 22
+      const clearOfOthers = occupied.every((other) => Math.hypot(candidate.x - other.x, candidate.y - other.y) > 20)
+
+      if (awayFromCentre && clearOfOthers) {
+        position = candidate
+        break
+      }
+    }
+
+    occupied.push(position)
+    return { ...piece, ...position, rotation: piece.rotation + (-10 + Math.random() * 20) }
+  })
+}
+
 function Nutcraft({ onFinish }) {
   const [level, setLevel] = useState(0)
-  const [pieces, setPieces] = useState(LEVELS[0])
+  const [pieces, setPieces] = useState(() => scatterPieces(LEVELS[0]))
+  const [fallingPieces, setFallingPieces] = useState([])
   const [score, setScore] = useState(0)
   const [moves, setMoves] = useState(0)
   const [time, setTime] = useState(NUT_TIME)
@@ -259,7 +304,7 @@ function Nutcraft({ onFinish }) {
   const [gameOver, setGameOver] = useState(false)
   const [completed, setCompleted] = useState(false)
   const [revived, setRevived] = useState(false)
-  const [message, setMessage] = useState('Remove the free nuts first!')
+  const [message, setMessage] = useState('Clear the free hardware to unlock the assembly.')
 
   useEffect(() => {
     if (gameOver || completed) return undefined
@@ -301,14 +346,20 @@ function Nutcraft({ onFinish }) {
     }
 
     setScore((value) => value + 50)
+    const fallingPiece = { ...piece, fallId: `${piece.id}-${Date.now()}` }
+    setFallingPieces((current) => [...current, fallingPiece])
+    window.setTimeout(() => {
+      setFallingPieces((current) => current.filter((item) => item.fallId !== fallingPiece.fallId))
+    }, 720)
     setMessage('🔩 Piece removed! +50')
 
     const remaining = pieces.filter((item) => item.id !== piece.id)
 
+
     if (remaining.length === 0) {
       if (level < LEVELS.length - 1) {
         setLevel((value) => value + 1)
-        setPieces(LEVELS[level + 1])
+        setPieces(scatterPieces(LEVELS[level + 1]))
         setMessage(`🎉 Level ${level + 2} unlocked!`)
       } else {
         setCompleted(true)
@@ -385,6 +436,23 @@ function Nutcraft({ onFinish }) {
               <span className={styles.nutBar} />
               <span className={styles.nutHead}>✕</span>
             </button>
+          ))}
+
+          {fallingPieces.map((piece) => (
+            <div
+              key={piece.fallId}
+              className={`${styles.nutPiece} ${styles[piece.color]} ${styles.fallingPiece}`}
+              style={{
+                left: `${piece.x}%`,
+                top: `${piece.y}%`,
+                '--fall-rotation': `${piece.rotation + 55}deg`,
+              }}
+              aria-hidden="true"
+            >
+              <span className={styles.nutHead}>âœ•</span>
+              <span className={styles.nutBar} />
+              <span className={styles.nutHead}>âœ•</span>
+            </div>
           ))}
 
           <div className={styles.centerBolt}>

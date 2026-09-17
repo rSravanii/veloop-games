@@ -27,7 +27,7 @@ export default function RedeemPage() {
     <main className={styles.page}>
       <div className={styles.shell}>
         <GameHeader />
-        <section className={styles.head}><p>GAME COIN REDEMPTION</p><h1>Turn Game Coins into VELOOP rewards</h1><span>This prototype uses dummy conversion rates and local frontend state only.</span><div className={styles.balance}><img src="/assets/icons/game-coin.avif" alt=""/><strong>{state.gameCoins}</strong><span>Game Coins</span></div></section>
+        <section className={styles.head}><p>GAME COIN REDEMPTION</p><h1>Turn Game Coins into VELoop rewards</h1><span>This prototype uses dummy conversion rates and local frontend state only.</span><div className={styles.balance}><img src="/assets/icons/game-coin.avif" alt=""/><strong>{state.gameCoins}</strong><span>Game Coins</span></div></section>
         <section className={styles.grid}>
           {offers.map((offer) => <article className={styles.offer} key={offer.key}><div className={styles.icon}>{offer.icon}</div><h2>{offer.label}</h2><p>Convert Game Coins to {offer.label}.</p><div className={styles.rate}><b>{offer.cost}</b> Game Coins <span>→</span> <b>{offer.amount}</b> {offer.label}</div><button type="button" onClick={() => setSelected(offer)}>Redeem</button></article>)}
         </section>

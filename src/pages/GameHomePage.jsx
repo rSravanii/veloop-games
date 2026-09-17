@@ -118,7 +118,7 @@ export default function GameHomePage() {
 
             <p>
               {game.description ||
-                'A new VELOOP challenge is waiting for you.'}
+                'A new VELoop challenge is waiting for you.'}
             </p>
 
             <div className={styles.entry}>
