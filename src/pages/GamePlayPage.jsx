@@ -551,7 +551,7 @@ function Nutcraft({ onFinish }) {
                 left: `${piece.x}%`,
                 top: `${piece.y}%`,
                 '--fall-rotation': `${piece.rotation + 55}deg`,
-                '--fall-x': '${piece.falloffsetX || 0}px',
+                '--fall-x': '${piece.fallOffsetX || 0}px',
                 '--fall-delay': '${piece.fallDelay || 0}ms',
               }}
               aria-hidden="true"
