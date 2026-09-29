@@ -1,9 +1,9 @@
-import { useEffect, useMemo, useState } from 'react'
-import { useNavigate, useParams } from 'react-router-dom'
-import games from '../data/gamesData.js'
-import { useGameEconomy } from '../context/GameEconomyContext.jsx'
-import GameHeader from '../components/games/GameHeader.jsx'
-import styles from './GamePlayPage.module.css'
+import { useEffect, useMemo, useState } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
+import games from '../data/gamesData.js';
+import { useGameEconomy } from '../context/GameEconomyContext.jsx';
+import GameHeader from '../components/games/GameHeader.jsx';
+import styles from './GamePlayPage.module.css';
 
 const BLADE_TIME = 30
 const NUT_TIME = 60
@@ -31,7 +31,9 @@ function BladeMaster({ onFinish }) {
   const [knives, setKnives] = useState([])
   const [gameOver, setGameOver] = useState(false)
   const [revived, setRevived] = useState(false)
-  const [message, setMessage] = useState('Aim for the centre and release your blade.')
+  const [message, setMessage] = useState(
+    'Aim for the centre and release your blade.'
+  )
 
   const targetSize = 300
 
@@ -53,75 +55,89 @@ function BladeMaster({ onFinish }) {
   }, [gameOver])
 
   const throwKnife = (event) => {
-    if (gameOver) return
+  if (gameOver) return
 
-    const rect = event.currentTarget.getBoundingClientRect()
+  const target = event.currentTarget
+  const rect = target.getBoundingClientRect()
 
-    let x = event.clientX - rect.left
-    let y = event.clientY - rect.top
+  const clientX = event.clientX
+  const clientY = event.clientY
 
-    const centerX = rect.width / 2
-    const centerY = rect.height / 2
+  const x = ((clientX - rect.left) / rect.width) * 100
+  const y = ((clientY - rect.top) / rect.height) * 100
 
-    // Landing spots are generated per throw, so repeated clicks never stack
-    // at the same point. A centre strike is guaranteed by the third throw.
-    const forceCentre = knives.length >= 2 && !knives.some((knife) => knife.isCentre)
-    const centreStrike = forceCentre || (!knives.some((knife) => knife.isCentre) && Math.random() < 0.28)
-    const impactAngle = Math.random() * Math.PI * 2
-    const impactDistance = centreStrike ? 4 + Math.random() * 15 : 52 + Math.random() * 92
+  const dx = x - 50
+  const dy = y - 50
 
-    x = centerX + Math.cos(impactAngle) * impactDistance
-    y = centerY + Math.sin(impactAngle) * impactDistance
+  const distance = Math.sqrt(dx * dx + dy * dy)
 
-    const dx = x - centerX
-    const dy = y - centerY
+  // Outside the circular target
+  if (distance > 50) return
 
-    const angle = Math.atan2(dy, dx) * (180 / Math.PI)
+  // Collision with an existing knife
+  const tooClose = knives.some((knife) => {
+    const knifeDx = knife.x - x
+    const knifeDy = knife.y - y
 
-    const distance = Math.sqrt(dx * dx + dy * dy)
+    return Math.sqrt(
+      knifeDx * knifeDx + knifeDy * knifeDy
+    ) < 9
+  })
 
-    if (distance < 35) {
-      setScore((value) => value + 30)
-      setMessage('🎯 PERFECT HIT! +30')
-    } else if (distance < 90) {
-      setScore((value) => value + 20)
-      setMessage('🔥 GREAT HIT! +20')
-    } else {
-      setScore((value) => value + 10)
-      setMessage('⚔️ HIT! +10')
-    }
+  if (tooClose) {
+    setLives((current) => {
+      const next = current - 1
 
-    const tooClose = knives.some(
-      (knife) => Math.hypot(knife.x - (x / rect.width) * 100, knife.y - (y / rect.height) * 100) < 11
-    )
+      if (next <= 0) {
+        setGameOver(true)
+      }
 
-    if (tooClose) {
-      setLives((value) => {
-        const next = Math.max(0, value - 1)
+      return Math.max(0, next)
+    })
 
-        if (next === 0) {
-          setGameOver(true)
-        }
-
-        return next
-      })
-
-      setMessage('💥 Knife collision! -1 life')
-      return
-    }
-
-    setKnives((current) => [
-      ...current,
-      {
-        id: Date.now() + Math.random(),
-        angle,
-        x: (x / rect.width) * 100,
-        y: (y / rect.height) * 100,
-        tilt: -14 + Math.random() * 28,
-        isCentre: distance < 35,
-      },
-    ])
+    setMessage('💥 Your blade hit another knife!')
+    return
   }
+
+  // Accuracy score
+  const accuracy = Math.max(
+    0,
+    1 - distance / 50
+  )
+
+  const points = Math.max(
+    10,
+    Math.round(100 * accuracy)
+  )
+
+  const tilt = Math.max(
+    -35,
+    Math.min(35, dx * 0.7)
+  )
+
+  const newKnife = {
+    id: `${Date.now()}-${Math.random()}`,
+    x,
+    y,
+    tilt,
+    points,
+  }
+
+  setKnives((current) => [
+    ...current,
+    newKnife,
+  ])
+
+  setScore((current) => current + points)
+
+  if (points >= 90) {
+    setMessage(`🎯 Perfect hit! +${points}`)
+  } else if (points >= 60) {
+    setMessage(`⚔️ Great hit! +${points}`)
+  } else {
+    setMessage(`🗡️ Hit! +${points}`)
+  }
+}
 
   const revive = () => {
     setRevived(true)
@@ -136,7 +152,9 @@ function BladeMaster({ onFinish }) {
       <div className={styles.gameTitle}>
         <div>
           <small>REACTION GAME</small>
+
           <h1>🗡️ Blade Master</h1>
+
           <p>Aim. Throw. Hit perfect.</p>
         </div>
 
@@ -153,19 +171,28 @@ function BladeMaster({ onFinish }) {
 
           <div>
             <span>Lives</span>
-            <strong>{'♥'.repeat(lives)}{'♡'.repeat(3 - lives)}</strong>
+            <strong>
+              {'♥'.repeat(lives)}
+              {'♡'.repeat(3 - lives)}
+            </strong>
           </div>
         </div>
       </div>
 
       <div className={styles.bladeArena}>
-        <div className={styles.bladeMessage}>{message}</div>
+        <div
+          className={styles.bladeMessage}
+          role="status"
+          aria-live="polite"
+        >
+          {message}
+        </div>
 
         <button
           type="button"
           className={styles.target}
           onPointerDown={throwKnife}
-          aria-label="Throw knife at target"
+          aria-label="Blade Master target. Tap or click to throw a knife."
           style={{
             width: targetSize,
             height: targetSize,
@@ -173,7 +200,9 @@ function BladeMaster({ onFinish }) {
         >
           <div className={styles.targetOuter}>
             <div className={styles.targetMiddle}>
-              <div className={styles.targetInner}>🎯</div>
+              <div className={styles.targetInner}>
+                🎯
+              </div>
             </div>
           </div>
 
@@ -184,8 +213,12 @@ function BladeMaster({ onFinish }) {
               style={{
                 left: `${knife.x}%`,
                 top: `${knife.y}%`,
-                transform: `translate(-50%, -92%) rotate(${knife.tilt}deg)`,
+                transform: `
+                  translate(-50%, -92%)
+                  rotate(${knife.tilt}deg)
+                `,
               }}
+              aria-hidden="true"
             >
               🔪
             </span>
@@ -193,7 +226,8 @@ function BladeMaster({ onFinish }) {
         </button>
 
         <p className={styles.bladeInstruction}>
-          Choose a clear line on the target to throw your blade
+          Choose a clear position on the target to throw
+          your blade.
         </p>
       </div>
 
@@ -206,11 +240,16 @@ function BladeMaster({ onFinish }) {
 
             <p>
               You threw {knives.length} knives.
-              {time === 0 ? ' Time is up!' : ' You ran out of lives!'}
+              {time === 0
+                ? ' Time is up!'
+                : ' You ran out of lives!'}
             </p>
 
             {!revived && (
-              <button type="button" onClick={revive}>
+              <button
+                type="button"
+                onClick={revive}
+              >
                 ⚔️ Revive +15 Seconds
               </button>
             )}
@@ -228,7 +267,6 @@ function BladeMaster({ onFinish }) {
     </section>
   )
 }
-
 /* =========================
    NUTCRAFT
 ========================= */
@@ -330,45 +368,112 @@ function Nutcraft({ onFinish }) {
   }
 
   const removePiece = (piece) => {
-    if (gameOver || completed) return
+  if (gameOver || completed) return
 
-    setMoves((value) => value + 1)
+  setMoves((value) => value + 1)
 
-    if (!isFree(piece)) {
-      setMistakes((value) => value + 1)
-      setMessage('🔒 Blocked! Remove its blocker first.')
+  if (!isFree(piece)) {
+    setMistakes((value) => {
+      const next = value + 1
 
-      if (mistakes + 1 >= 3) {
+      if (next >= 3) {
         setGameOver(true)
-      }
-
-      return
-    }
-
-    setScore((value) => value + 50)
-    const fallingPiece = { ...piece, fallId: `${piece.id}-${Date.now()}` }
-    setFallingPieces((current) => [...current, fallingPiece])
-    window.setTimeout(() => {
-      setFallingPieces((current) => current.filter((item) => item.fallId !== fallingPiece.fallId))
-    }, 720)
-    setMessage('🔩 Piece removed! +50')
-
-    const remaining = pieces.filter((item) => item.id !== piece.id)
-
-
-    if (remaining.length === 0) {
-      if (level < LEVELS.length - 1) {
-        setLevel((value) => value + 1)
-        setPieces(scatterPieces(LEVELS[level + 1]))
-        setMessage(`🎉 Level ${level + 2} unlocked!`)
+        setMessage('💥 Too many mistakes!')
       } else {
-        setCompleted(true)
-        setScore((value) => value + time * 2)
+        setMessage('🔒 Blocked! Remove its blocker first.')
       }
-    } else {
-      setPieces(remaining)
-    }
+
+      return next
+    })
+
+    return
   }
+
+  const remaining = pieces.filter(
+    (item) => item.id !== piece.id
+  )
+
+  // Main removed piece
+  const mainFallingPiece = {
+    ...piece,
+    fallId: `${piece.id}-${Date.now()}-main`,
+    fallOffsetX: 0,
+    fallDelay: 0,
+  }
+
+  // Extra falling nuts for a richer release animation
+  const extraFallingPieces = Array.from(
+    { length: 3 },
+    (_, index) => ({
+      ...piece,
+      fallId: `${piece.id}-${Date.now()}-${index}`,
+      x: Math.max(
+        8,
+        Math.min(
+          92,
+          piece.x + (-14 + Math.random() * 28)
+        )
+      ),
+      y: Math.max(
+        18,
+        Math.min(
+          82,
+          piece.y + (-8 + Math.random() * 16)
+        )
+      ),
+      rotation:
+        piece.rotation +
+        (-35 + Math.random() * 70),
+      fallOffsetX: -30 + Math.random() * 60,
+      fallDelay: index * 70,
+    }))
+
+  const releasedPieces = [
+    mainFallingPiece,
+    ...extraFallingPieces,
+  ]
+
+  setFallingPieces((current) => [
+    ...current,
+    ...releasedPieces,
+  ])
+
+  releasedPieces.forEach((fallingPiece) => {
+    window.setTimeout(() => {
+      setFallingPieces((current) =>
+        current.filter(
+          (item) => item.fallId !== fallingPiece.fallId
+        )
+      )
+    }, 900 + fallingPiece.fallDelay)
+  })
+
+  setScore((value) => value + 50)
+
+  if (remaining.length === 0) {
+    if (level < LEVELS.length - 1) {
+      setLevel((value) => value + 1)
+      setPieces(
+        scatterPieces(LEVELS[level + 1])
+      )
+      setMessage(
+        `🎉 Level ${level + 2} unlocked!`
+      )
+    } else {
+      const timeBonus = time * 2
+
+      setScore((value) => value + timeBonus)
+      setCompleted(true)
+
+      setMessage(
+        `🏆 All levels complete! +${timeBonus} time bonus`
+      )
+    }
+  } else {
+    setPieces(remaining)
+    setMessage('🔩 Piece removed! +50')
+  }
+}
 
   const revive = () => {
     setRevived(true)
@@ -446,12 +551,14 @@ function Nutcraft({ onFinish }) {
                 left: `${piece.x}%`,
                 top: `${piece.y}%`,
                 '--fall-rotation': `${piece.rotation + 55}deg`,
+                '--fall-x': '${piece.falloffsetX || 0}px',
+                '--fall-delay': '${piece.fallDelay || 0}ms',
               }}
               aria-hidden="true"
             >
-              <span className={styles.nutHead}>âœ•</span>
+              <span className={styles.nutHead}>X</span>
               <span className={styles.nutBar} />
-              <span className={styles.nutHead}>âœ•</span>
+              <span className={styles.nutHead}>X</span>
             </div>
           ))}
 
@@ -513,9 +620,8 @@ function Nutcraft({ onFinish }) {
 ========================= */
 
 export default function GamePlayPage() {
-  const { slug } = useParams()
-  const navigate = useNavigate()
-
+  const { slug } = useParams();
+  const navigate = useNavigate();
   const game = useMemo(
     () => games.find((item) => item.slug === slug),
     [slug]

@@ -1,47 +1,111 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useGameEconomy } from '../../context/GameEconomyContext.jsx'
+
 import PlayNowButton from './PlayNowButton.jsx'
 import TokenCost from './TokenCost.jsx'
+
 import styles from './GameCard.module.css'
 
 export default function GameCard({ game }) {
   const navigate = useNavigate()
   const { state } = useGameEconomy()
+
   const [loaded, setLoaded] = useState(false)
   const [failed, setFailed] = useState(false)
-  const disabled = state.tokens < game.cost
+
+  const hasEnoughTokens = state.tokens >= game.cost
+
+  const openGame = () => {
+    if (!hasEnoughTokens) return
+
+    navigate(`/games/${game.slug}`)
+  }
 
   return (
-    <article className={styles.card} style={{ '--accent': game.accent }} aria-label={`${game.name} game card`}>
+    <article
+      className={styles.card}
+      style={{ '--accent': game.accent }}
+      aria-label={`${game.name} game card`}
+      data-game-card
+    >
+      {/* GAME ARTWORK */}
       <div className={styles.artworkWrap}>
-        {!loaded && !failed && <div className={styles.skeleton}>Loading artwork…</div>}
+        {!loaded && !failed && (
+          <div
+            className={styles.skeleton}
+            aria-hidden="true"
+          >
+            <span>Loading artwork…</span>
+          </div>
+        )}
+
         {failed ? (
-          <div className={styles.fallback}>Artwork unavailable</div>
+          <div
+            className={styles.fallback}
+            role="img"
+            aria-label={`${game.name} artwork unavailable`}
+          >
+            <span>Artwork unavailable</span>
+          </div>
         ) : (
           <img
             src={game.image}
             alt={`${game.name} game artwork`}
             loading="lazy"
+            decoding="async"
             onLoad={() => setLoaded(true)}
-            onError={() => setFailed(true)}
-            className={loaded ? styles.loaded : ''}
+            onError={() => {
+              setFailed(true)
+              setLoaded(false)
+            }}
+            className={`${styles.image} ${
+              loaded ? styles.loaded : ''
+            }`}
           />
         )}
+
+        {/* GAME META */}
         <div className={styles.topMeta}>
-          <span>{game.category}</span>
-          {game.badge && <strong>{game.badge}</strong>}
+          {game.category && (
+            <span className={styles.category}>
+              {game.category}
+            </span>
+          )}
+
+          {game.badge && (
+            <strong className={styles.badge}>
+              {game.badge}
+            </strong>
+          )}
         </div>
       </div>
+
+      {/* ACTION AREA */}
       <div className={styles.actionArea}>
-        <div>
+        <div className={styles.info}>
           <h3>{game.name}</h3>
-          <TokenCost amount={game.cost} compact />
+
+          <TokenCost
+            amount={game.cost}
+            compact
+          />
+
+          {!hasEnoughTokens && (
+            <span className={styles.insufficient}>
+              Requires {game.cost} Tokens
+            </span>
+          )}
         </div>
+
         <PlayNowButton
-          disabled={disabled}
-          onClick={() => navigate(`/games/${game.slug}`)}
-          ariaLabel={disabled ? `${game.name}: not enough Tokens` : `Open ${game.name}`}
+          disabled={!hasEnoughTokens}
+          onClick={openGame}
+          ariaLabel={
+            hasEnoughTokens
+              ? `Play ${game.name}`
+              : `${game.name}: requires ${game.cost} Tokens`
+          }
         />
       </div>
     </article>

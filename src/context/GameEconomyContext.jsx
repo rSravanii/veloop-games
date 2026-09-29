@@ -32,9 +32,17 @@ export function GameEconomyProvider({ children }) {
   }
 
   const spendTokens = (amount) => {
-    if (state.tokens < amount) return false
-    commit((s) => ({ ...s, tokens: s.tokens - amount }))
-    return true
+    let success = false
+    commit((s) => {
+      if (s.tokrns < amount) return s
+      success = true 
+      return {
+        ...s,
+        tokens: s.tokens - amount,
+
+      }
+    })
+    return success
   }
 
   const addGameCoins = (amount) => commit((s) => ({ ...s, gameCoins: s.gameCoins + amount }))

@@ -28,6 +28,7 @@ export default function GameHomePage() {
   const [guideOpen, setGuideOpen] = useState(false)
   const [requiredGuide, setRequiredGuide] = useState(false)
   const [message, setMessage] = useState('')
+  const [starting, setStarting] = useState(false)
 
   if (!game) {
     return (
@@ -38,6 +39,7 @@ export default function GameHomePage() {
   }
 
   const start = () => {
+    if (starting) return 
     setMessage('')
 
     // Only the two selected games are playable.
@@ -56,29 +58,51 @@ export default function GameHomePage() {
       return
     }
 
-    // Deduct the entry fee.
-    const paid = spendTokens(game.cost)
-
-    if (!paid) {
-      setMessage(
-        `Not Enough Tokens. You need ${game.cost} Tokens to play.`
-      )
-      return
-    }
-
     // First-time players must see the guide.
     if (!state.guideSeen[game.slug]) {
       setRequiredGuide(true)
       setGuideOpen(true)
       return
     }
+    setStarting(true)
+    //returning players can start immediately.
+    const paid = spendTokens(game.cost)
+    
+    if (!paid) {
+      setStarting(false)
+      setMessage(
+        `Not Enough Tokens. You need ${game.cost} Tokens to play.`
+      )
+      return
+    }
 
-    // Returning players go directly to gameplay.
     navigate(`/games/${game.slug}/play`)
+
   }
 
   const continueFromGuide = () => {
+    if (starting) return
+    setMessage('')
+    setStarting(true)
+
+  // Deduct entry fee only when the player actually starts.
+    const paid = spendTokens(game.cost)
+
+    if (!paid) {
+      setStarting(false)
+      setGuideOpen(false)
+      setRequiredGuide(false)
+
+      setMessage(
+        `Not Enough Tokens. You need ${game.cost} Tokens to play.`
+      )
+
+      return
+    }
+
+  // Remember that the player has seen the guide.
     markGuideSeen(game.slug)
+
     setGuideOpen(false)
     setRequiredGuide(false)
 
@@ -137,8 +161,12 @@ export default function GameHomePage() {
               className={styles.play}
               onClick={start}
               type="button"
+              disabled={starting}
+              aria-busy={starting}
             >
-              {game.playable
+              {starting
+              ? 'Starting...'
+              : game.playable
                 ? '▶ Play Now'
                 : 'Preview Banner'}
             </button>

@@ -1,4 +1,103 @@
-.track { display:flex; gap:18px; overflow-x:auto; scroll-snap-type:x proximity; scrollbar-width:none; padding:8px 2px 18px; overscroll-behavior-inline:contain; touch-action:pan-x pan-y; }
-.track > div { flex:0 0 clamp(250px,24vw,320px); }
-.track::-webkit-scrollbar { display:none; }
-@media(max-width:575px){ .track > div { flex-basis:min(92vw,380px); } }
+.track {
+  width: 100%;
+
+  display: flex;
+  gap: 18px;
+
+  overflow-x: auto;
+  overflow-y: hidden;
+
+  padding: 12px 4px 24px;
+
+  scroll-snap-type: x proximity;
+  scroll-behavior: smooth;
+
+  overscroll-behavior-x: contain;
+
+  /*
+   * Native touch scrolling.
+   */
+  touch-action: pan-x;
+
+  scrollbar-width: none;
+
+  -webkit-overflow-scrolling: touch;
+}
+
+.track::-webkit-scrollbar {
+  display: none;
+}
+
+.cardSlot {
+  flex: 0 0 clamp(
+    260px,
+    31vw,
+    360px
+  );
+
+  min-width: 0;
+
+  scroll-snap-align: start;
+}
+
+/* TABLET */
+
+@media (max-width: 900px) {
+  .track {
+    gap: 16px;
+  }
+
+  .cardSlot {
+    flex-basis: min(
+      72vw,
+      330px
+    );
+  }
+}
+
+/* MOBILE */
+
+@media (max-width: 600px) {
+  .track {
+    gap: 14px;
+
+    padding:
+      8px
+      8px
+      20px;
+
+    scroll-snap-type: x mandatory;
+  }
+
+  .cardSlot {
+    /*
+     * Large enough to see the artwork clearly
+     * without squeezing desktop cards onto mobile.
+     */
+    flex-basis: 82vw;
+
+    max-width: 340px;
+  }
+}
+
+/* SMALL PHONES */
+
+@media (max-width: 360px) {
+  .track {
+    gap: 12px;
+    padding-left: 4px;
+    padding-right: 4px;
+  }
+
+  .cardSlot {
+    flex-basis: calc(100vw - 32px);
+  }
+}
+
+/* REDUCED MOTION */
+
+@media (prefers-reduced-motion: reduce) {
+  .track {
+    scroll-behavior: auto;
+  }
+}
