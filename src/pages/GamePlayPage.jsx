@@ -35,7 +35,7 @@ function BladeMaster({ onFinish }) {
     'Aim for the centre and release your blade.'
   )
 
-  const targetSize = 300
+  const targetSize = 420
 
   useEffect(() => {
     if (gameOver) return undefined
@@ -551,8 +551,8 @@ function Nutcraft({ onFinish }) {
                 left: `${piece.x}%`,
                 top: `${piece.y}%`,
                 '--fall-rotation': `${piece.rotation + 55}deg`,
-                '--fall-x': '${piece.fallOffsetX || 0}px',
-                '--fall-delay': '${piece.fallDelay || 0}ms',
+                '--fall-x': `${piece.fallOffsetX || 0}px`,
+                '--fall-delay': `${piece.fallDelay || 0}ms`,
               }}
               aria-hidden="true"
             >

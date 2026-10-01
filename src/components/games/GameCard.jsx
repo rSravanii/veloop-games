@@ -84,29 +84,23 @@ export default function GameCard({ game }) {
       {/* ACTION AREA */}
       <div className={styles.actionArea}>
         <div className={styles.info}>
-          <h3>{game.name}</h3>
-
+          <h3 className={styles.title}>{game.name}</h3>
+        </div>
+        <div className={styles.footer}>
           <TokenCost
             amount={game.cost}
             compact
           />
-
-          {!hasEnoughTokens && (
-            <span className={styles.insufficient}>
-              Requires {game.cost} Tokens
-            </span>
-          )}
+          <PlayNowButton
+          disabledled = {!hasEnoughTokens}
+            onClick={openGame}
+            ariaLabel={
+              hasEnoughTokens
+                ? `Play ${game.name}`
+                : `${game.name}: requires ${game.cost} Tokens`
+            }
+          />
         </div>
-
-        <PlayNowButton
-          disabled={!hasEnoughTokens}
-          onClick={openGame}
-          ariaLabel={
-            hasEnoughTokens
-              ? `Play ${game.name}`
-              : `${game.name}: requires ${game.cost} Tokens`
-          }
-        />
       </div>
     </article>
   )

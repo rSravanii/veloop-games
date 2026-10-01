@@ -31,6 +31,10 @@ export default function GamesCarousel({ games }) {
     }, delay)
   }, [])
 
+  /* =========================================
+     UPDATE ACTIVE DOT
+  ========================================= */
+
   const updateActive = useCallback(() => {
     const track = trackRef.current
 
@@ -43,8 +47,8 @@ export default function GamesCarousel({ games }) {
     const gap =
       parseFloat(
         getComputedStyle(track).columnGap ||
-        getComputedStyle(track).gap ||
-        '18'
+          getComputedStyle(track).gap ||
+          '18'
       ) || 18
 
     const step =
@@ -52,35 +56,28 @@ export default function GamesCarousel({ games }) {
 
     if (!step) return
 
-    const half = track.scrollWidth / 2
+    const position = track.scrollLeft
 
-    let position = track.scrollLeft
-
-    if (half > 0 && position >= half) {
-      position %= half
-    }
-
-    const index =
-      Math.round(position / step) % games.length
-
-    setActive(
-      index < 0
-        ? index + games.length
-        : index
+    const index = Math.min(
+      games.length - 1,
+      Math.max(0, Math.round(position / step))
     )
+
+    setActive(index)
   }, [games.length])
 
-  /* AUTO SCROLL */
+  /* =========================================
+     AUTO SCROLL
+  ========================================= */
 
   useEffect(() => {
     const track = trackRef.current
 
     if (!track || games.length <= 1) return
 
-    const reduced =
-      window.matchMedia(
-        '(prefers-reduced-motion: reduce)'
-      ).matches
+    const reduced = window.matchMedia(
+      '(prefers-reduced-motion: reduce)'
+    ).matches
 
     if (reduced) return
 
@@ -99,19 +96,25 @@ export default function GamesCarousel({ games }) {
         track.scrollWidth > track.clientWidth
       ) {
         /*
-         * Slow, smooth movement instead of a
-         * fast arcade-style scroll.
+         * Slow, smooth horizontal movement.
          */
         track.scrollLeft += dt * 0.027
 
-        const half =
-          track.scrollWidth / 2
+        const maxScroll =
+          track.scrollWidth - track.clientWidth
 
+        /*
+         * We have only ONE copy of the 13 banners.
+         * When the end is reached, return to the first.
+         */
         if (
-          half > 0 &&
-          track.scrollLeft >= half
+          maxScroll > 0 &&
+          track.scrollLeft >= maxScroll - 2
         ) {
-          track.scrollLeft -= half
+          track.scrollTo({
+            left: 0,
+            behavior: 'smooth',
+          })
         }
       }
 
@@ -123,13 +126,19 @@ export default function GamesCarousel({ games }) {
       requestAnimationFrame(tick)
 
     return () => {
-      cancelAnimationFrame(rafRef.current)
+      if (rafRef.current) {
+        cancelAnimationFrame(rafRef.current)
+      }
 
       if (resumeTimerRef.current) {
         clearTimeout(resumeTimerRef.current)
       }
     }
   }, [games.length])
+
+  /* =========================================
+     DOT NAVIGATION
+  ========================================= */
 
   const scrollToGame = useCallback(
     (index) => {
@@ -145,8 +154,8 @@ export default function GamesCarousel({ games }) {
       const gap =
         parseFloat(
           getComputedStyle(track).columnGap ||
-          getComputedStyle(track).gap ||
-          '18'
+            getComputedStyle(track).gap ||
+            '18'
         ) || 18
 
       const step =
@@ -170,50 +179,59 @@ export default function GamesCarousel({ games }) {
     ]
   )
 
+  /* =========================================
+     EMPTY STATE
+  ========================================= */
+
   if (!games.length) {
     return null
   }
+
+  /* =========================================
+     RENDER
+  ========================================= */
 
   return (
     <>
       <div
         ref={trackRef}
         className={styles.track}
+
         onScroll={updateActive}
+
         onMouseEnter={pauseAutoScroll}
         onMouseLeave={() => resumeAutoScroll()}
+
         onPointerDown={pauseAutoScroll}
+
         onPointerUp={() => {
           updateActive()
           resumeAutoScroll(900)
         }}
+
         onPointerCancel={() => {
           updateActive()
           resumeAutoScroll(900)
         }}
+
         onTouchStart={pauseAutoScroll}
+
         onTouchEnd={() => {
           updateActive()
           resumeAutoScroll(900)
         }}
+
         role="region"
         aria-label="Games carousel. Swipe or scroll horizontally."
       >
-        {[...games, ...games].map(
-          (game, index) => (
-            <div
-              key={`${game.id}-${index}`}
-              className={styles.cardSlot}
-              aria-hidden={
-                index >= games.length
-                  ? 'true'
-                  : undefined
-              }
-            >
-              <GameCard game={game} />
-            </div>
-          )
-        )}
+        {games.map((game) => (
+          <div
+            key={game.id}
+            className={styles.cardSlot}
+          >
+            <GameCard game={game} />
+          </div>
+        ))}
       </div>
 
       <CarouselDots
